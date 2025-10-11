@@ -1,6 +1,69 @@
 import pandas as pd
 import re # For regular expressions
 import os # For file path operations
+import reportlab # For PDF generation
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+
+
+def build_report(location_count, sorted_word_count, location_word_count, word_count):
+    
+    report = canvas.Canvas("Spelling-Analysis-Report.pdf", pagesize=A4)
+
+    elements = []
+
+    styles = getSampleStyleSheet()
+    
+    # Set the style for the normal text
+    wrap_style = styles['Normal']
+
+    # Set the style for the tables
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), '#d5dae6'),     # Header background color
+        ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),      # Header text color
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),              # Left align all cells
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Header font
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),           # Header padding
+        ('BACKGROUND', (0, 1), (-1, -1), '#f9f9f9'),    # Body background color
+        ('GRID', (0, 0), (-1, -1), 1, "#242424"),       # Grid lines
+    ])
+
+
+
+    # Create a table to display the total responses per location
+    location_table_data = [["Location", "Number of Responses"]]
+    for location, count in location_count.items():
+        location_table_data.append([location, count])
+    elements.append(location_table_data)
+
+    # Create a table to display the most common words overall
+    word_table_data = [["Word", "Frequency"]]
+    for word, count in list(sorted_word_count.items())[:20]:  # Top 20 words
+        word_table_data.append([word, count])
+    elements.append(word_table_data)
+
+    # Create tables to display the most common words per location
+    location_word_tables = {}
+    for location, words in location_word_count.items():
+        word_table_data = [["Word", "Frequency"]]
+        sorted_words = dict(sorted(words.items(), key=lambda item: item[1], reverse=True))
+        for word, count in list(sorted_words.items())[:10]:  # Top 10 words per location
+            word_table_data.append([word, count])
+        location_word_tables[location] = word_table_data
+    elements.append(location_word_tables)
+
+    # Now, let's add the elements to the PDF
+    report.setFont("Helvetica", 12)
+
+    report.drawString(30, 800, "Spelling Analysis Report")
+    report.
+
+
+
 
 def analyze_data(data):
     # Create an empty list to store data
@@ -47,8 +110,58 @@ def analyze_data(data):
                 break
         else:
             entry.append("Unknown Location")
+    
+    # ----- ----- ----- ----- ----- -----
+    # ------ End of Data Cleansing ------
 
-    print(Raw_data)
+
+    # Now begin the analysis of the data 
+    # To start lets count the reponces form each location
+    location_count = {}
+    for entry in Raw_data:
+        location = entry[0]
+        if location in location_count:
+            location_count[location] += 1
+        else:
+            location_count[location] = 1
+    
+    print("\nLocation Count:")
+    print(location_count)
+
+    # Now run through the data and count the most common words that people struggle to spell
+    word_count = {}
+
+    for entry in Raw_data:
+        words = entry[1].split() + entry[2].split() # Split the words by spaces
+        for word in words:
+            word = word.lower() # Convert to lowercase for uniformity
+            word = re.sub(r'[^\w\s]', '', word) # Remove punctuation
+            if word: # Ensure the word is not empty
+                if word in word_count:
+                    word_count[word] += 1
+                else:
+                    word_count[word] = 1
+
+    # Sort the word count dictionary by frequency
+    sorted_word_count = dict(sorted(word_count.items(), key=lambda item: item[1], reverse=True))
+
+    # Now run through the data and count the most common words per location
+    location_word_count = {}
+    for entry in Raw_data:
+        location = entry[0]
+        words = entry[1].split() + entry[2].split() # Split the words by spaces
+        if location not in location_word_count:
+            location_word_count[location] = {}
+        for word in words:
+            word = word.lower() # Convert to lowercase for uniformity
+            word = re.sub(r'[^\w\s]', '', word) # Remove punctuation
+            if word: # Ensure the word is not empty
+                if word in location_word_count[location]:
+                    location_word_count[location][word] += 1
+                else:
+                    location_word_count[location][word] = 1
+
+    build_report(location_count, sorted_word_count, location_word_count, word_count)
 
 
 def main():
