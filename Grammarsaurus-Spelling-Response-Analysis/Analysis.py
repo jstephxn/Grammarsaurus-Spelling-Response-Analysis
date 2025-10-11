@@ -1,4 +1,5 @@
 import pandas as pd
+import re # For regular expressions
 import os # For file path operations
 
 def analyze_data(data):
@@ -9,12 +10,45 @@ def analyze_data(data):
         Raw_data.append([str(row['Timestamp']), str(row['What are two words your class struggles to spell?']), str(row['What are two words you struggle to spell? (Don\'t worry about the spelling.)'])])
 
     print("\nNow Cleansing the Data...")
-    # Second, cleanse the data (remove any unwanted characters etc...)
+
+    # Second, cleanse the data (remove any unwanted characters, emojis etc...)
     for entry in Raw_data:
         entry[0] = entry[0].replace('\\', ' ') # Remove backslashes and replace with a space
         entry[0] = entry[0].replace(',', '') # Remove commas
+    # Remove any emojis from the data
+        entry[1] = re.sub(r'[^\x00-\x7F]+', '', entry[1]) # Remove non-ASCII characters
+        entry[2] = re.sub(r'[^\x00-\x7F]+', '', entry[2]) # Remove non-ASCII characters
 
-    
+    print(Raw_data)
+
+    print("\nData Cleansed Successfully...")
+
+    # Create a Dictionary Containing the Dates and Locations of the Events
+    event_days = {
+        "Cornwall" : "17/09/2025",
+        "Portsmouth" : "19/09/2025",
+        "Wellingborough" : "23/09/2025",
+        "Walsall" : "25/09/2025",
+        "Nottingham" : "26/09/2025",
+        "Stoke On Trent" : "29/09/2025",
+        "Manchester" : "30/09/2025",
+        "Hull" : "02/10/2025",
+        "Leeds" : "03/10/2025",
+        "Newcastle" : "07/10/2025",
+        "Blackpool" : "09/10/2025",
+        "Gloucester" : "10/10/2025",
+    }
+
+    # Using the Timestamp collumn, replace the the timestamp with the location of the event for each entry
+    for entry in Raw_data:
+        for location, date in event_days.items():
+            if date in entry[0]:
+                entry[0] = location
+                break
+        else:
+            entry.append("Unknown Location")
+
+    print(Raw_data)
 
 
 def main():
