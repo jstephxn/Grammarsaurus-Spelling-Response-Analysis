@@ -11,13 +11,11 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 
 def build_report(location_count, sorted_word_count, location_word_count, word_count):
-    
-    report = canvas.Canvas("Spelling-Analysis-Report.pdf", pagesize=A4)
 
     elements = []
 
     styles = getSampleStyleSheet()
-    
+
     # Set the style for the normal text
     wrap_style = styles['Normal']
 
@@ -38,13 +36,19 @@ def build_report(location_count, sorted_word_count, location_word_count, word_co
     location_table_data = [["Location", "Number of Responses"]]
     for location, count in location_count.items():
         location_table_data.append([location, count])
-    elements.append(location_table_data)
+    
+    location_table = Table(location_table_data)
+    location_table.setStyle(table_style)
+    elements.append(location_table)
 
     # Create a table to display the most common words overall
     word_table_data = [["Word", "Frequency"]]
     for word, count in list(sorted_word_count.items())[:20]:  # Top 20 words
         word_table_data.append([word, count])
-    elements.append(word_table_data)
+
+    common_word_table = Table(word_table_data)
+    common_word_table.setStyle(table_style)
+    elements.append(common_word_table)
 
     # Create tables to display the most common words per location
     location_word_tables = {}
@@ -54,13 +58,18 @@ def build_report(location_count, sorted_word_count, location_word_count, word_co
         for word, count in list(sorted_words.items())[:10]:  # Top 10 words per location
             word_table_data.append([word, count])
         location_word_tables[location] = word_table_data
-    elements.append(location_word_tables)
+    
+    words_per_location_table = Table(location_word_tables)
+    words_per_location_table.setStyle(table_style)
+    elements.append(words_per_location_table)
+
+    # Create an output path
+    output_path = os.path.join(os.path.expanduser("~"), "Documents", "Spelling_Analysis_Report.pdf")
 
     # Now, let's add the elements to the PDF
-    report.setFont("Helvetica", 12)
+    report = SimpleDocTemplate("Spelling_Analysis_Report.pdf", pagesize=A4)
+    report.build(elements)
 
-    report.drawString(30, 800, "Spelling Analysis Report")
-    report.
 
 
 
