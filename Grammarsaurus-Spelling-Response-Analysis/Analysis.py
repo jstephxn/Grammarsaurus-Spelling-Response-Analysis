@@ -41,6 +41,8 @@ def build_report(location_count, sorted_word_count, location_word_count, word_co
     location_table.setStyle(table_style)
     elements.append(location_table)
 
+    elements.append(Spacer(1, 12))  # Add space between tables
+
     # Create a table to display the most common words overall
     word_table_data = [["Word", "Frequency"]]
     for word, count in list(sorted_word_count.items())[:20]:  # Top 20 words
@@ -50,26 +52,26 @@ def build_report(location_count, sorted_word_count, location_word_count, word_co
     common_word_table.setStyle(table_style)
     elements.append(common_word_table)
 
+    elements.append(Spacer(1, 12))  # Add space between tables
     # Create tables to display the most common words per location
-    location_word_tables = {}
-    for location, words in location_word_count.items():
-        word_table_data = [["Word", "Frequency"]]
-        sorted_words = dict(sorted(words.items(), key=lambda item: item[1], reverse=True))
-        for word, count in list(sorted_words.items())[:10]:  # Top 10 words per location
-            word_table_data.append([word, count])
-        location_word_tables[location] = word_table_data
-    
-    words_per_location_table = Table(location_word_tables)
-    words_per_location_table.setStyle(table_style)
-    elements.append(words_per_location_table)
+    # for location, words in location_word_count.items():
+    #    word_table_data = [["Word", "Frequency"]]
+    #    sorted_words = dict(sorted(words.items(), key=lambda item: item[1], reverse=True))
+    #    for word, count in list(sorted_words.items())[:10]:  # Top 10 words per location
+    #        word_table_data.append([word, count])
+
+    # words_per_location_table = Table(word_table_data)
+    # words_per_location_table.setStyle(table_style)
+    # elements.append(words_per_location_table)
 
     # Create an output path
     output_path = os.path.join(os.path.expanduser("~"), "Documents", "Spelling_Analysis_Report.pdf")
 
     # Now, let's add the elements to the PDF
-    report = SimpleDocTemplate("Spelling_Analysis_Report.pdf", pagesize=A4)
+    report = SimpleDocTemplate(str(output_path), pagesize=A4)
     report.build(elements)
 
+    print (f"\nReport generated successfully and saved to {output_path}")
 
 
 
