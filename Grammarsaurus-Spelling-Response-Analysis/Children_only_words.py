@@ -24,11 +24,14 @@ def main():
 
     print("\nNow Cleansing the Data...")
 
+    # List of unwanted characters to remove
+    unwanted_characters = ['\\', ',', 'and', '.', '(', ')', '!', '?', '-']
+
     # Second, cleanse the data (remove any unwanted characters, emojis etc...)
     for entry in Raw_data:
-        entry = entry.replace('\\', ' ') # Remove backslashes and replace with a space
-        entry = entry.replace(',', '') # Remove commas
-        entry = entry.replace('and', '') # Remove 'and'
+        for char in unwanted_characters:
+            entry = entry.replace(char, ' ') # Replace unwanted characters with space
+            
     # Remove any emojis from the data
         entry = re.sub(r'[^\x00-\x7F]+', '', entry) # Remove non-ASCII characters
         entry = re.sub(r'[^\x00-\x7F]+', '', entry) # Remove non-ASCII characters
